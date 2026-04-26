@@ -289,6 +289,50 @@ a:hover { opacity: 0.8; }
 }
 
 /* ═══════════════════════════════════════════════════════════
+   VIDEO SHOWCASE
+   ═══════════════════════════════════════════════════════════ */
+.video-showcase {
+  padding: 0 5vw 8vh;
+  margin-top: -4vh;
+}
+
+.video-showcase-container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.video-showcase-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--gold);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.video-showcase-wrapper {
+  position: relative;
+  padding-bottom: 56.25%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--gold-faint);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow:
+    0 0 60px rgba(201, 168, 76, 0.06),
+    0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.video-showcase-wrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
    ESSAY
    ═══════════════════════════════════════════════════════════ */
 .essay-section {
@@ -899,13 +943,28 @@ a:hover { opacity: 0.8; }
     <h1 class="hero-title">Architects <span class="em">Notes</span></h1>
     <div class="hero-series">Parallel Processing</div>
     <p class="hero-subtitle">Where medicine meets fiction. The integration space between Dr. Yamicia Connor and the worlds she builds.</p>
-    <a href="#latest" class="hero-cta">
-      Read the latest <span class="arrow">&darr;</span>
+    <a href="#watch" class="hero-cta">
+      Watch the reading <span class="arrow">&darr;</span>
     </a>
   </div>
   <div class="hero-footer">
     <div>MC // Creative</div>
     <div>YC // Clinical</div>
+  </div>
+</section>
+
+<!-- ═══════════════ VIDEO SHOWCASE ═══════════════ -->
+<section class="video-showcase reveal" id="watch">
+  <div class="video-showcase-container">
+    <div class="video-showcase-label">Dramatic Reading &mdash; Episode 1</div>
+    <div class="video-showcase-wrapper">
+      <iframe
+        src="https://www.youtube.com/embed/vN27Hb3qX8s?rel=0&modestbranding=1"
+        title="Broken Vase — Dramatic Reading, Episode 1"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+    </div>
   </div>
 </section>
 
