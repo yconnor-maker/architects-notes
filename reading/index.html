@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Immersive Reading | Powerhouse Novelas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="scrolly-container">
+        <!-- Video Section (Fixed) -->
+        <div class="video-panel">
+            <div class="video-wrapper">
+                <!-- Placeholder for the video exported from Descript -->
+                <video id="readingVideo" playsinline controls>
+                    <source src="The%20Reading%20%E2%80%94%20Scrollytelling.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            
+            <div class="video-details">
+                <h2 class="book-title">Broken Vase</h2>
+                <div class="scene-title">DRAMATIC READING: THE DIVORCE SCENE</div>
+            </div>
+            
+            <div class="cta-container">
+                <a href="#" class="btn-primary">Join the Waitlist</a>
+                <a href="#" class="btn-secondary">Subscribe to Substack</a>
+            </div>
+        </div>
+
+        <!-- Transcript Section (Scrollable) -->
+        <div class="transcript-panel">
+            <div class="transcript-content" id="transcriptContainer">
+                <div class="transcript-intro">
+                    <h1>The Divorce Scene</h1>
+                    <p class="subtitle">Press play or scroll to experience the reading.</p>
+                </div>
+                
+                <!-- These lines will be generated dynamically from Descript JSON/VTT, 
+                     but here is the structural placeholder -->
+                <div class="transcript-line" data-start="0" data-end="5">
+                    <p>[This text will sync with your video...] Waiting for Descript transcript.</p>
+                </div>
+                <div class="transcript-line" data-start="5" data-end="10">
+                    <p>Once you export the timeline, the code will automatically highlight this text as you speak.</p>
+                </div>
+                <div class="transcript-line" data-start="10" data-end="15">
+                    <p>And if the reader clicks this paragraph, the video will jump directly to this moment.</p>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
