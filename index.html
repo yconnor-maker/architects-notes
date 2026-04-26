@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Architect's Notes — Parallel Processing</title>
+<meta name="description" content="Where medicine meets fiction. The integration space between Dr. Yamicia Connor and the worlds she builds.">
+<meta property="og:title" content="Architect's Notes — Parallel Processing">
+<meta property="og:description" content="Where medicine meets fiction. The integration space between Dr. Yamicia Connor and the worlds she builds.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   ARCHITECT'S NOTES — Design System
+   Typography: Cormorant Garamond / JetBrains Mono / Inter
+   Palette: Onyx #0a0608 / Gold #c9a84c / Rose #8b3a4a / Cream #f0ebe3
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --bg: #0a0608;
+  --bg-elevated: #110c0f;
+  --bg-glass: rgba(10, 6, 8, 0.82);
+  --cream: #f0ebe3;
+  --cream-muted: rgba(240, 235, 227, 0.6);
+  --cream-faint: rgba(240, 235, 227, 0.18);
+  --cream-ghost: rgba(240, 235, 227, 0.08);
+  --gold: #c9a84c;
+  --gold-soft: rgba(201, 168, 76, 0.4);
+  --gold-faint: rgba(201, 168, 76, 0.12);
+  --rose: #8b3a4a;
+  --rose-soft: rgba(139, 58, 74, 0.3);
+  --rose-dark: #3c1428;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  --max-w: 720px;
+  --max-w-wide: 960px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--rose);
+  color: var(--cream);
+}
+
+a {
+  color: var(--gold);
+  text-decoration: none;
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+a:hover { opacity: 0.8; }
+
+/* ── Background Architecture ── */
+.architecture-lines {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(201, 168, 76, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(201, 168, 76, 0.025) 1px, transparent 1px);
+  background-size: 80px 80px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bg-gradient {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(139, 58, 74, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(201, 168, 76, 0.08) 0%, transparent 55%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.glow {
+  position: fixed;
+  width: 50vmax;
+  height: 50vmax;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.25;
+  z-index: 0;
+  pointer-events: none;
+}
+.glow.rose {
+  background: radial-gradient(circle, rgba(180, 60, 90, 0.4) 0%, transparent 70%);
+  top: -15vmax; left: -15vmax;
+  animation: drift1 30s ease-in-out infinite alternate;
+}
+.glow.gold {
+  background: radial-gradient(circle, rgba(201, 168, 76, 0.3) 0%, transparent 70%);
+  bottom: -15vmax; right: -15vmax;
+  animation: drift2 38s ease-in-out infinite alternate;
+}
+@keyframes drift1 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(12vmax, 8vmax) scale(1.1); }
+}
+@keyframes drift2 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-10vmax, -6vmax) scale(1.05); }
+}
+
+/* ── Content Layer ── */
+.content-layer {
+  position: relative;
+  z-index: 10;
+}
+
+/* ── Utility ── */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--cream-muted);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+}
+
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 20px;
+  max-width: var(--max-w-wide);
+  margin: 0 auto;
+}
+.section-divider .line {
+  flex: 1;
+  height: 1px;
+  background: var(--gold-faint);
+}
+.section-divider .label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--gold-soft);
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HERO
+   ═══════════════════════════════════════════════════════════ */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8vh 5vw;
+  position: relative;
+}
+
+.hero .vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.6) 100%);
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 2.5vh;
+  opacity: 0;
+  animation: fadeUp 1.6s ease 0.3s forwards;
+}
+.hero-eyebrow .line {
+  width: 36px;
+  height: 1px;
+  background: var(--gold-soft);
+}
+
+.hero-title {
+  font-family: var(--font-serif);
+  font-size: clamp(3.2rem, 8vw, 7rem);
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  line-height: 1.05;
+  margin-bottom: 1vh;
+  opacity: 0;
+  animation: fadeUp 1.6s ease 0.6s forwards;
+}
+.hero-title .em {
+  font-style: italic;
+  color: var(--gold);
+  font-weight: 400;
+}
+
+.hero-series {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: clamp(0.85rem, 1.6vw, 1.1rem);
+  color: var(--rose);
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  margin-bottom: 4vh;
+  opacity: 0;
+  animation: fadeUp 1.6s ease 0.9s forwards;
+}
+
+.hero-subtitle {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  color: var(--cream-muted);
+  max-width: 34em;
+  line-height: 1.6;
+  margin: 0 auto 5vh;
+  opacity: 0;
+  animation: fadeUp 1.6s ease 1.2s forwards;
+}
+
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--gold);
+  padding: 14px 36px;
+  border: 1px solid var(--gold-soft);
+  border-radius: 30px;
+  transition: all 0.4s ease;
+  opacity: 0;
+  animation: fadeUp 1.6s ease 1.5s forwards;
+}
+.hero-cta:hover {
+  background: rgba(201, 168, 76, 0.08);
+  border-color: var(--gold);
+  opacity: 1;
+  box-shadow: 0 0 30px rgba(201, 168, 76, 0.1);
+}
+.hero-cta .arrow {
+  transition: transform 0.3s ease;
+}
+.hero-cta:hover .arrow {
+  transform: translateY(3px);
+}
+
+.hero-footer {
+  position: absolute;
+  bottom: 4vh;
+  left: 0; right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 5vw;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--cream-faint);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeUp 1.6s ease 2s forwards;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ESSAY
+   ═══════════════════════════════════════════════════════════ */
+.essay-section {
+  padding: 10vh 5vw 8vh;
+}
+
+.essay-container {
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+.essay-header {
+  margin-bottom: 6vh;
+  text-align: center;
+}
+
+.essay-series-tag {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--rose);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+}
+
+.essay-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--cream);
+  margin-bottom: 1rem;
+}
+
+.essay-subtitle {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--gold);
+}
+
+.essay-body {
+  font-family: var(--font-serif);
+  font-size: clamp(1.05rem, 1.4vw, 1.2rem);
+  font-weight: 400;
+  line-height: 1.85;
+  color: rgba(240, 235, 227, 0.88);
+}
+
+.essay-body p {
+  margin-bottom: 1.6em;
+}
+
+.essay-body .section-break {
+  text-align: center;
+  color: var(--gold-soft);
+  font-size: 1.4rem;
+  letter-spacing: 0.5em;
+  margin: 2.5em 0;
+  user-select: none;
+}
+
+.essay-body em {
+  color: var(--cream);
+  font-style: italic;
+}
+
+.essay-body strong {
+  font-weight: 500;
+  color: var(--cream);
+}
+
+/* Video Embed Placeholder */
+.video-embed {
+  margin: 4em 0;
+  position: relative;
+  padding-bottom: 56.25%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--cream-ghost);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.video-embed .placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.video-embed .play-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid var(--gold-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+.video-embed:hover .play-icon {
+  border-color: var(--gold);
+  box-shadow: 0 0 30px rgba(201, 168, 76, 0.15);
+}
+
+.video-embed .play-icon svg {
+  fill: var(--gold);
+  margin-left: 4px;
+}
+
+.video-embed .video-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--cream-muted);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+/* Paywall Break */
+.paywall-break {
+  margin: 4em 0;
+  padding: 3em 2.5em;
+  background: linear-gradient(135deg, rgba(139, 58, 74, 0.12) 0%, rgba(201, 168, 76, 0.06) 100%);
+  border: 1px solid var(--rose-soft);
+  border-left: 3px solid var(--rose);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.paywall-break .paywall-title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-style: italic;
+  color: var(--cream);
+  margin-bottom: 0.8em;
+}
+
+.paywall-break .paywall-text {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--cream-muted);
+  margin-bottom: 1.5em;
+  line-height: 1.6;
+}
+
+.paywall-break .paywall-cta {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--gold);
+  padding: 12px 32px;
+  border-radius: 24px;
+  transition: all 0.3s ease;
+}
+.paywall-break .paywall-cta:hover {
+  opacity: 1;
+  box-shadow: 0 0 30px rgba(201, 168, 76, 0.3);
+  transform: translateY(-1px);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ABOUT
+   ═══════════════════════════════════════════════════════════ */
+.about-section {
+  padding: 8vh 5vw 10vh;
+}
+
+.about-container {
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+.about-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 300;
+  color: var(--cream);
+  margin-bottom: 3rem;
+  text-align: center;
+}
+.about-title .em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+.about-body {
+  font-family: var(--font-serif);
+  font-size: clamp(1.05rem, 1.4vw, 1.15rem);
+  line-height: 1.85;
+  color: rgba(240, 235, 227, 0.82);
+}
+
+.about-body p {
+  margin-bottom: 1.6em;
+}
+
+.about-quote {
+  margin: 3em 0;
+  padding: 2em 2.5em;
+  border-left: 2px solid var(--rose);
+  background: rgba(139, 58, 74, 0.06);
+  border-radius: 0 8px 8px 0;
+}
+
+.about-quote p {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(1.2rem, 1.8vw, 1.4rem);
+  color: var(--cream);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MEMBERSHIP
+   ═══════════════════════════════════════════════════════════ */
+.membership-section {
+  padding: 8vh 5vw 10vh;
+}
+
+.membership-container {
+  max-width: var(--max-w-wide);
+  margin: 0 auto;
+}
+
+.membership-header {
+  text-align: center;
+  margin-bottom: 5vh;
+}
+
+.membership-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 300;
+  color: var(--cream);
+  margin-bottom: 1rem;
+}
+
+.membership-subtitle {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--cream-muted);
+  max-width: 30em;
+  margin: 0 auto;
+}
+
+.tiers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+@media (max-width: 640px) {
+  .tiers { grid-template-columns: 1fr; }
+}
+
+.tier-card {
+  padding: 2.5em 2em;
+  border: 1px solid var(--cream-ghost);
+  border-radius: 12px;
+  background: rgba(17, 12, 15, 0.6);
+  backdrop-filter: blur(10px);
+  transition: border-color 0.3s ease;
+}
+.tier-card:hover {
+  border-color: var(--gold-faint);
+}
+
+.tier-card.featured {
+  border-color: var(--gold-soft);
+  background: linear-gradient(160deg, rgba(201, 168, 76, 0.06) 0%, rgba(17, 12, 15, 0.8) 60%);
+  position: relative;
+}
+.tier-card.featured::before {
+  content: 'Recommended';
+  position: absolute;
+  top: -10px;
+  right: 24px;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--gold);
+  padding: 4px 14px;
+  border-radius: 10px;
+}
+
+.tier-name {
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  font-weight: 400;
+  color: var(--cream);
+  margin-bottom: 0.3em;
+}
+
+.tier-price {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--gold);
+  letter-spacing: 0.15em;
+  margin-bottom: 1.5em;
+}
+
+.tier-features {
+  list-style: none;
+  margin-bottom: 2em;
+}
+
+.tier-features li {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--cream-muted);
+  padding: 0.5em 0;
+  border-bottom: 1px solid var(--cream-ghost);
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.tier-features li:last-child {
+  border-bottom: none;
+}
+
+.tier-features .check {
+  color: var(--gold);
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
+.tier-cta {
+  display: block;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  padding: 12px 24px;
+  border-radius: 24px;
+  transition: all 0.3s ease;
+}
+
+.tier-cta.outline {
+  color: var(--cream-muted);
+  border: 1px solid var(--cream-ghost);
+}
+.tier-cta.outline:hover {
+  border-color: var(--cream-muted);
+  opacity: 1;
+}
+
+.tier-cta.solid {
+  color: var(--bg);
+  background: var(--gold);
+  border: 1px solid var(--gold);
+}
+.tier-cta.solid:hover {
+  opacity: 1;
+  box-shadow: 0 0 25px rgba(201, 168, 76, 0.25);
+}
+
+.membership-note {
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--cream-faint);
+  max-width: 36em;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ARCHIVE
+   ═══════════════════════════════════════════════════════════ */
+.archive-section {
+  padding: 8vh 5vw 10vh;
+}
+
+.archive-container {
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+.archive-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 300;
+  color: var(--cream);
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.archive-list {
+  list-style: none;
+}
+
+.archive-item {
+  border-bottom: 1px solid var(--cream-ghost);
+}
+
+.archive-link {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 1.6em 0;
+  color: var(--cream);
+  transition: all 0.3s ease;
+  gap: 16px;
+}
+.archive-link:hover {
+  opacity: 1;
+  color: var(--gold);
+  padding-left: 12px;
+}
+
+.archive-essay-title {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.archive-meta {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--cream-faint);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.archive-item .tag {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 10px;
+  border: 1px solid;
+}
+.tag.free {
+  color: var(--gold);
+  border-color: var(--gold-soft);
+}
+.tag.members {
+  color: var(--rose);
+  border-color: var(--rose-soft);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════════════════════ */
+.site-footer {
+  padding: 6vh 5vw 4vh;
+  border-top: 1px solid var(--cream-ghost);
+}
+
+.footer-container {
+  max-width: var(--max-w-wide);
+  margin: 0 auto;
+}
+
+.footer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 3rem;
+  margin-bottom: 4rem;
+}
+
+.footer-brand .footer-wordmark {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: var(--cream);
+  margin-bottom: 0.5rem;
+}
+.footer-brand .footer-wordmark .em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+.footer-brand .footer-tagline {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--cream-faint);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+.footer-links-group {
+  display: flex;
+  gap: 3rem;
+  flex-wrap: wrap;
+}
+
+.footer-col h4 {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--gold);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  font-weight: 400;
+}
+
+.footer-col ul {
+  list-style: none;
+}
+
+.footer-col li {
+  margin-bottom: 0.6rem;
+}
+
+.footer-col a {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--cream-muted);
+}
+.footer-col a:hover {
+  color: var(--cream);
+  opacity: 1;
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--cream-ghost);
+}
+
+.footer-copyright {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--cream-faint);
+  letter-spacing: 0.15em;
+}
+
+.footer-codes {
+  display: flex;
+  gap: 2rem;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  color: var(--cream-faint);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCROLL ANIMATIONS
+   ═══════════════════════════════════════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .hero-footer { display: none; }
+  .footer-top { flex-direction: column; }
+  .footer-links-group { flex-direction: column; gap: 2rem; }
+  .footer-bottom { flex-direction: column; text-align: center; }
+  .footer-codes { justify-content: center; }
+  .paywall-break { padding: 2em 1.5em; }
+  .about-quote { padding: 1.5em; }
+  .archive-link { flex-direction: column; gap: 8px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Background Architecture -->
+<div class="bg-gradient"></div>
+<div class="architecture-lines"></div>
+<div class="glow rose"></div>
+<div class="glow gold"></div>
+
+<div class="content-layer">
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="hero" id="top">
+  <div class="vignette"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <div class="line"></div>
+      <span class="eyebrow">Yamicia Connor</span>
+      <div class="line"></div>
+    </div>
+    <h1 class="hero-title">Architects <span class="em">Notes</span></h1>
+    <div class="hero-series">Parallel Processing</div>
+    <p class="hero-subtitle">Where medicine meets fiction. The integration space between Dr. Yamicia Connor and the worlds she builds.</p>
+    <a href="#latest" class="hero-cta">
+      Read the latest <span class="arrow">&darr;</span>
+    </a>
+  </div>
+  <div class="hero-footer">
+    <div>MC // Creative</div>
+    <div>YC // Clinical</div>
+  </div>
+</section>
+
+<!-- ═══════════════ LATEST ESSAY ═══════════════ -->
+<div class="section-divider reveal">
+  <div class="line"></div>
+  <div class="label">Latest</div>
+  <div class="line"></div>
+</div>
+
+<section class="essay-section" id="latest">
+  <div class="essay-container">
+    <div class="essay-header reveal">
+      <div class="essay-series-tag">Architect's Notes &mdash; Broken Vase, Episode 1</div>
+      <h2 class="essay-title">I Read My Own Work Aloud. Here's What I Heard.</h2>
+      <div class="essay-subtitle">On voice, grief, and the collapse of distance</div>
+    </div>
+
+    <div class="essay-body">
+      <p class="reveal">I have never read my own fiction aloud to anyone.</p>
+
+      <p class="reveal">That sentence should probably embarrass me less than it does, given that I've been writing for years &mdash; quietly, steadily, in the margins of a life that doesn't leave much margin. But writing is private in a way that's hard to explain to people who don't do it. The page is a room you enter alone. The door locks behind you. And the understanding, always, is that no one is listening.</p>
+
+      <p class="reveal">So when I sat down last Friday night, glass of wine in hand, and opened the first chapter of <em>Broken Vase</em> to read it live &mdash; my voice, my words, my breath giving shape to a woman I built from the inside out &mdash; something happened that I wasn't prepared for. The distance collapsed. The craft I'd been hiding behind for years became a body, became sound, became something I couldn't revise or soften or take back. I heard myself. Not the physician. Not the founder. Not the careful public version of me who measures every word against what the institution might think. I heard the writer. And she was someone I hadn't let into the room in a very long time.</p>
+
+      <div class="section-break reveal">&bull; &bull; &bull;</div>
+
+      <p class="reveal">I should tell you what Architect's Notes is, if you're new here.</p>
+
+      <p class="reveal">This is the place where I stop compartmentalizing. I am an OB-GYN. I run a company that is trying to keep women alive through pregnancy. I am also a novelist. I write literary fiction under a pen name, through a small independent publishing house whose book revenue goes directly into maternal health work. These things are not separate lives. They are the same mind, the same obsessions, the same questions about power and bodies and what happens when the structures we trust turn out to be hollow. But for a long time, I kept them apart &mdash; because that's what you do. You're one person in the hospital, another person at home, another person on the page. You compartmentalize because the world rewards compartmentalization, and you're too tired to argue.</p>
+
+      <p class="reveal">Architect's Notes is where I stopped arguing. It's the bridge. The physician and the novelist live in the same room here, and if that makes you uncomfortable, I understand. It made me uncomfortable for a decade.</p>
+
+      <p class="reveal">I turned forty this year. My mother reminded me to schedule my mammogram &mdash; me, the OB-GYN &mdash; and something about that cracked open the last door I'd been holding shut. Your body starts requiring the kind of attention the world has trained you to give to everyone else except yourself. And I thought: if not now, when? If I'm going to ask women to stop performing wellness they don't feel, I should probably stop performing a separation I no longer believe in.</p>
+
+      <p class="reveal">So here we are.</p>
+
+      <div class="section-break reveal">&bull; &bull; &bull;</div>
+
+      <p class="reveal"><em>Broken Vase</em> is the first book from our publishing house. It is a novel about marriage and destruction and the very specific kind of grief that has no casserole. Episode 1 is called "The Visit." It is written in first person from the point of view of Camille &mdash; a woman sitting at her parents' kitchen table in Silver Spring, drinking cold tea, waiting for her ex-husband to arrive.</p>
+
+      <p class="reveal">A craft note, because this is Architect's Notes and I owe you the architecture:</p>
+
+      <p class="reveal">The conventional version of this story is the wronged woman who screams. The betrayed wife who throws things, who rages, who gives the audience the catharsis of a spectacular emotional detonation. I didn't write Camille like that. I wrote her flat instead of furious &mdash; because real long-term grief doesn't look like a screaming match. It is quiet and defeated. It is not theatrical. It looks like a woman drinking cold tea and saying <em>I'm alive</em>, and meaning only that.</p>
+
+      <p class="reveal">The anger burns out. Literally.</p>
+
+      <p class="reveal">I hope that resonates with people. I hope they can see the stage of grief she is in &mdash; not the cinematic version, but the clinical one. The one I've watched, as a physician, settle into the bodies of women who have been carrying loss so long it has become structural. Because here's the thing about sustained grief that most fiction gets wrong: it doesn't just break your heart metaphorically. It changes the heart. Physically. The muscle thickens. Stiffens. Becomes less efficient at the basic act of pumping blood through a body that isn't sure it wants to keep going. That is medically real. And as a metaphor, it is perfect.</p>
+
+      <p class="reveal">This is what it means to be a physician-novelist. You carry two kinds of knowing. You know what grief looks like on a chart &mdash; the blood pressure medication added at month three, the sleep aid, the anti-anxiety prescription, the architecture of five pills that holds a woman's day together. And you know what grief sounds like in a sentence. You know how to write a woman who has stopped looking in mirrors because no version of her reflection offers useful information anymore. You know how to write the line <em>the children kept me from swallowing a bottle of sleeping pills</em> in the same register as <em>the children kept me from missing the school bus</em> &mdash; because that flatness is the truth. That matter-of-fact logistics of staying alive when staying alive has become a math problem.</p>
+
+      <p class="reveal">I wrote Camille from inside that math. I didn't give her speeches. I gave her a teacup and a blood pressure pill and a sister who sleeps on her floor and doesn't ask if she's sure. I gave her children whose voices still hold light. And I gave her the one line I'm proudest of as a writer, the one about sustained grief and what it does to the heart &mdash; because it is beautiful and tragic and medically real, and because sometimes the best fiction is just the truth that nobody has said out loud yet.</p>
+
+      <div class="section-break reveal">&bull; &bull; &bull;</div>
+
+      <p class="reveal">Reading it aloud changed it again. My voice caught in places I didn't expect. The sentences I'd revised forty times hit differently when they had to pass through my throat instead of my fingers. I could hear where the prose was doing its job &mdash; where the rhythm slowed Camille down, where the silence between her words carried as much weight as the words themselves. And I could hear where it wasn't fiction anymore. Where it was just me, in a room, telling the truth about what it costs to be a woman who builds her life around someone and then has to learn to stand when the foundation is gone.</p>
+
+      <p class="reveal">That's what the reading is. Not a performance. A reckoning.</p>
+    </div>
+
+    <!-- Video Embed -->
+    <div class="video-embed reveal">
+      <div class="placeholder">
+        <div class="play-icon">
+          <svg width="20" height="24" viewBox="0 0 20 24"><polygon points="0,0 20,12 0,24"/></svg>
+        </div>
+        <div class="video-label">The Dramatic Reading &mdash; Episode 1</div>
+      </div>
+    </div>
+
+    <!-- Paywall Break -->
+    <div class="paywall-break reveal">
+      <div class="paywall-title">Continue into the reading.</div>
+      <p class="paywall-text">The full dramatic reading of "The Visit" &mdash; Episode 1 of <em>Broken Vase</em> &mdash; is available for members. It's me, reading Camille's chapter in its entirety, followed by a conversation about the craft, the characters, and what comes next.</p>
+      <a href="#membership" class="paywall-cta">Become a Member</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ ABOUT ═══════════════ -->
+<div class="section-divider reveal">
+  <div class="line"></div>
+  <div class="label">About</div>
+  <div class="line"></div>
+</div>
+
+<section class="about-section" id="about">
+  <div class="about-container">
+    <h2 class="about-title reveal">The <span class="em">Integration</span></h2>
+
+    <div class="about-body">
+      <p class="reveal">Dr. Yamicia Connor is a Harvard-MIT trained OB-GYN, a healthcare founder building the infrastructure to keep women alive through pregnancy, and a literary novelist who writes under a pen name through an independent publishing house whose revenue funds maternal health work.</p>
+
+      <p class="reveal">Architect's Notes is where she examines the craft of building both &mdash; a medical practice and a literary universe &mdash; in parallel. It is the integration space: essays on craft, dramatic readings of new fiction, live salons on the intersection of medicine and storytelling, and the architecture behind a life that refuses to split into separate compartments.</p>
+
+      <div class="about-quote reveal">
+        <p>"I am not two people. I am one person who decided to stop pretending the parts don't talk to each other."</p>
+      </div>
+
+      <p class="reveal">The physician sees grief change the heart muscle. The novelist gives that grief a name, a kitchen table, a cup of cold tea. Architect's Notes is where those two kinds of knowing meet &mdash; and where you're invited to watch the building happen in real time.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ MEMBERSHIP ═══════════════ -->
+<div class="section-divider reveal">
+  <div class="line"></div>
+  <div class="label">Membership</div>
+  <div class="line"></div>
+</div>
+
+<section class="membership-section" id="membership">
+  <div class="membership-container">
+    <div class="membership-header reveal">
+      <h2 class="membership-title">Join the Build</h2>
+      <p class="membership-subtitle">Subscribe directly &mdash; no platform surcharge. We'll add you within 24&ndash;48 hours.</p>
+    </div>
+
+    <div class="tiers">
+      <!-- Free Tier -->
+      <div class="tier-card reveal">
+        <div class="tier-name">Reader</div>
+        <div class="tier-price">Free</div>
+        <ul class="tier-features">
+          <li><span class="check">&check;</span> Public essays and craft notes</li>
+          <li><span class="check">&check;</span> Selected dramatic readings</li>
+          <li><span class="check">&check;</span> The weekly newsletter</li>
+          <li><span class="check">&check;</span> Access to the essay archive</li>
+        </ul>
+        <a href="mailto:contact@diosara.com?subject=Architect's Notes — Free Subscription&body=I'd like to subscribe to the free tier of Architect's Notes." class="tier-cta outline">Subscribe Free</a>
+      </div>
+
+      <!-- Paid Tier -->
+      <div class="tier-card featured reveal">
+        <div class="tier-name">Builder</div>
+        <div class="tier-price">$12/month</div>
+        <ul class="tier-features">
+          <li><span class="check">&check;</span> Everything in Reader</li>
+          <li><span class="check">&check;</span> Full dramatic readings &amp; video</li>
+          <li><span class="check">&check;</span> Live salons &amp; craft conversations</li>
+          <li><span class="check">&check;</span> Early access to new fiction</li>
+          <li><span class="check">&check;</span> The full archive, unlocked</li>
+        </ul>
+        <a href="mailto:contact@diosara.com?subject=Architect's Notes — Builder Membership&body=I'd like to subscribe to the Builder tier ($12/month) of Architect's Notes. Please send me payment details." class="tier-cta solid">Become a Builder</a>
+      </div>
+    </div>
+
+    <p class="membership-note reveal">Payment is handled directly &mdash; no intermediary platform taking a cut. Stripe integration coming soon. For now, reach out and we'll get you set up.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ ARCHIVE ═══════════════ -->
+<div class="section-divider reveal">
+  <div class="line"></div>
+  <div class="label">Archive</div>
+  <div class="line"></div>
+</div>
+
+<section class="archive-section" id="archive">
+  <div class="archive-container">
+    <h2 class="archive-title reveal">Essay Archive</h2>
+
+    <ul class="archive-list">
+      <li class="archive-item reveal">
+        <a href="#latest" class="archive-link">
+          <span class="archive-essay-title">I Read My Own Work Aloud. Here's What I Heard.</span>
+          <span class="archive-meta">
+            <span class="tag free">Free</span>
+          </span>
+        </a>
+      </li>
+      <li class="archive-item reveal">
+        <a href="#" class="archive-link">
+          <span class="archive-essay-title">The DA Business Thesis: Building Healthcare Infrastructure as Literature</span>
+          <span class="archive-meta">
+            <span class="tag members">Members</span>
+          </span>
+        </a>
+      </li>
+      <li class="archive-item reveal">
+        <a href="#" class="archive-link">
+          <span class="archive-essay-title">Parallel Processing: Why I Stopped Separating the Physician from the Writer</span>
+          <span class="archive-meta">
+            <span class="tag free">Coming Soon</span>
+          </span>
+        </a>
+      </li>
+      <li class="archive-item reveal">
+        <a href="#" class="archive-link">
+          <span class="archive-essay-title">Camille's Heart: The Medical Reality Inside the Metaphor</span>
+          <span class="archive-meta">
+            <span class="tag free">Coming Soon</span>
+          </span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer class="site-footer">
+  <div class="footer-container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-wordmark">Architects <span class="em">Notes</span></div>
+        <div class="footer-tagline">Parallel Processing</div>
+      </div>
+
+      <div class="footer-links-group">
+        <div class="footer-col">
+          <h4>The Universe</h4>
+          <ul>
+            <li><a href="https://powerhousenovelas.com" target="_blank" rel="noopener">Powerhouse Novelas</a></li>
+            <li><a href="https://monicacraiyon.com" target="_blank" rel="noopener">Monica Craiyon</a></li>
+            <li><a href="https://diosara.com" target="_blank" rel="noopener">Diosa Ara</a></li>
+            <li><a href="#" target="_blank" rel="noopener">YC Substack</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <ul>
+            <li><a href="https://www.linkedin.com/in/yamicia/" target="_blank" rel="noopener">LinkedIn</a></li>
+            <li><a href="https://www.instagram.com/dr.yamicia/" target="_blank" rel="noopener">Instagram</a></li>
+            <li><a href="mailto:contact@diosara.com">Email</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="footer-copyright">&copy; 2026 Dr. Yamicia Connor. Architect's Notes is a YCT Group property.</div>
+      <div class="footer-codes">
+        <div>MC // Creative</div>
+        <div>YC // Clinical</div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</div><!-- end content-layer -->
+
+<!-- ═══════════════ SCROLL REVEAL ═══════════════ -->
+<script>
+(function() {
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, {
+    threshold: 0.12,
+    rootMargin: '0px 0px -40px 0px'
+  });
+  reveals.forEach(function(el) { observer.observe(el); });
+})();
+</script>
+
+</body>
+</html>
